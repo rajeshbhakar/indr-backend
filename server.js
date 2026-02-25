@@ -1,41 +1,78 @@
+require("dotenv").config();
 const express = require("express");
+const mongoose = require("mongoose");
 const cors = require("cors");
-const dotenv = require("dotenv");
-const connectDB = require("./config/db");
-const startAutoGame = require("./services/autoGameEngine");
-
-dotenv.config();
 
 const app = express();
 
-/* MIDDLEWARE */
+/* ============================= */
+/* ✅ MIDDLEWARE                 */
+/* ============================= */
+
 app.use(cors());
 app.use(express.json());
 
-/* ROUTES */
-app.use("/api/auth", require("./routes/auth.routes"));
-app.use("/api/profile", require("./routes/profile.routes"));
-app.use("/api/wallet", require("./routes/wallet.routes"));
-app.use("/api/game", require("./routes/game.routes"));
-app.use("/api/round", require("./routes/round.routes"));
-app.use("/api/bet", require("./routes/bet.routes"));
-app.use("/api/admin", require("./routes/admin.routes"));
+/* ============================= */
+/* ✅ ROOT ROUTE (IMPORTANT)     */
+/* ============================= */
 
-/* TEST */
 app.get("/", (req, res) => {
-  res.send("INDR BACKEND CONNECTED");
+  res.status(200).json({
+    success: true,
+    message: "INDR Backend is Live 🚀"
+  });
 });
 
-/* START SERVER */
-const PORT = process.env.PORT || 5000;
+/* ============================= */
+/* ✅ ROUTES IMPORT              */
+/* ============================= */
 
-connectDB().then(() => {
+const authRoutes = require("./routes/auth.routes");
+const betRoutes = require("./routes/bet.routes");
+const roundRoutes = require("./routes/round.routes");
+const walletRoutes = require("./routes/wallet.routes");
+const adminRoutes = require("./routes/admin.routes");
 
-  app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+/* ============================= */
+/* ✅ ROUTES USE                 */
+/* ============================= */
+
+app.use("/api/auth", authRoutes);
+app.use("/api/bet", betRoutes);
+app.use("/api/round", roundRoutes);
+app.use("/api/wallet", walletRoutes);
+app.use("/api/admin", adminRoutes);
+
+/* ============================= */
+/* ❌ 404 HANDLER                */
+/* ============================= */
+
+app.use((req, res) => {
+  res.status(404).json({
+    success: false,
+    message: "Route Not Found"
+  });
+});
+
+/* ============================= */
+/* ✅ DATABASE CONNECT           */
+/* ============================= */
+
+mongoose.connect(process.env.MONGO_URI)
+  .then(() => {
+    console.log("MongoDB Connected");
+  })
+  .catch((err) => {
+    console.log("DB Error:", err.message);
+    process.exit(1);
   });
 
-  // ✅ Only ONE engine
-  startAutoGame();
+/* ============================= */
+/* ✅ SERVER START               */
+/* ============================= */
 
+const PORT = process.env.PORT || 5000;
+
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });
