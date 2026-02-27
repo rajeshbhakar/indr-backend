@@ -3,20 +3,27 @@ const User = require("../models/user.model");
 /* ================= GET WALLET ================= */
 const getWallet = async (req, res) => {
   try {
-    const user = await User.findById(req.user._id).select("coins username mobile");
-
-    if (!user) {
-      return res.json({ success: false, msg: "User not found" });
+    if (!req.user) {
+      return res.status(401).json({
+        success: false,
+        msg: "Unauthorized"
+      });
     }
 
     res.json({
       success: true,
-      coins: user.coins,
-      user
+      coins: req.user.coins,
+      user: {
+        username: req.user.username,
+        mobile: req.user.mobile
+      }
     });
 
   } catch (err) {
-    res.json({ success: false, msg: err.message });
+    res.status(500).json({
+      success: false,
+      msg: err.message
+    });
   }
 };
 
