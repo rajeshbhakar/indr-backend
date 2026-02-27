@@ -3,6 +3,10 @@ const Round = require("../models/Round");
 const User = require("../models/user.model");
 const Transaction = require("../models/transaction.model");
 
+/* ============================= */
+/* 🎯 PLACE BET                 */
+/* ============================= */
+
 exports.placeBet = async (req, res) => {
   try {
 
@@ -16,7 +20,6 @@ exports.placeBet = async (req, res) => {
       });
     }
 
-    // 🔍 Get running round
     const runningRound = await Round.findOne({ status: "running" });
 
     if (!runningRound) {
@@ -26,7 +29,6 @@ exports.placeBet = async (req, res) => {
       });
     }
 
-    // 🔒 Lock check
     if (runningRound.bettingLocked === true) {
       return res.json({
         success: false,
@@ -34,17 +36,13 @@ exports.placeBet = async (req, res) => {
       });
     }
 
-    /* ============================= */
-    /* 🔐 ATOMIC COINS DEDUCTION    */
-    /* ============================= */
-
     const updatedUser = await User.findOneAndUpdate(
       {
         _id: userId,
-        coins: { $gte: amount }   // ✅ coins check
+        coins: { $gte: amount }
       },
       {
-        $inc: { coins: -amount }  // ✅ deduct coins
+        $inc: { coins: -amount }
       },
       { new: true }
     );
@@ -56,10 +54,6 @@ exports.placeBet = async (req, res) => {
       });
     }
 
-    /* ============================= */
-    /* 🎯 CREATE BET                */
-    /* ============================= */
-
     const bet = await Bet.create({
       userId,
       roundId: runningRound.roundId,
@@ -70,15 +64,11 @@ exports.placeBet = async (req, res) => {
       winAmount: 0
     });
 
-    /* ============================= */
-    /* 🧾 LOG TRANSACTION           */
-    /* ============================= */
-
     await Transaction.create({
       userId,
       type: "debit",
       amount,
-      balanceAfter: updatedUser.coins, // ✅ fixed
+      balanceAfter: updatedUser.coins,
       reason: "Bet Placed",
       roundId: runningRound.roundId
     });
@@ -87,7 +77,30 @@ exports.placeBet = async (req, res) => {
       success: true,
       message: "Bet placed successfully",
       bet,
-      balance: updatedUser.coins // ✅ fixed
+      balance: updatedUser.coins
+    });
+
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+
+/* ============================= */
+/* 📜 GET MY BETS               */
+/* ============================= */
+
+exports.getMyBets = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    const bets = await Bet.find({ userId })
+      .sort({ createdAt: -1 });
+
+    res.json({
+      success: true,
+      count: bets.length,
+      bets
     });
 
   } catch (err) {
