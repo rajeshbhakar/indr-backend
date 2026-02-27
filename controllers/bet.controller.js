@@ -35,16 +35,16 @@ exports.placeBet = async (req, res) => {
     }
 
     /* ============================= */
-    /* 🔐 ATOMIC WALLET DEDUCTION   */
+    /* 🔐 ATOMIC COINS DEDUCTION    */
     /* ============================= */
 
     const updatedUser = await User.findOneAndUpdate(
       {
         _id: userId,
-        wallet: { $gte: amount }   // 💣 balance check inside query
+        coins: { $gte: amount }   // ✅ coins check
       },
       {
-        $inc: { wallet: -amount }  // atomic deduction
+        $inc: { coins: -amount }  // ✅ deduct coins
       },
       { new: true }
     );
@@ -78,7 +78,7 @@ exports.placeBet = async (req, res) => {
       userId,
       type: "debit",
       amount,
-      balanceAfter: updatedUser.wallet,
+      balanceAfter: updatedUser.coins, // ✅ fixed
       reason: "Bet Placed",
       roundId: runningRound.roundId
     });
@@ -87,7 +87,7 @@ exports.placeBet = async (req, res) => {
       success: true,
       message: "Bet placed successfully",
       bet,
-      balance: updatedUser.wallet
+      balance: updatedUser.coins // ✅ fixed
     });
 
   } catch (err) {
