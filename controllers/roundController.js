@@ -54,13 +54,27 @@ exports.generateResult = async (req, res) => {
       });
     }
 
-    const result = Math.floor(Math.random() * 10);
+    const { getForcedResult, clearForcedResult } = require("./adminResult.controller");
 
+let result;
+
+const forced = getForcedResult();
+
+if(forced !== null){
+
+  result = forced;
+  clearForcedResult();
+
+}else{
+
+  result = Math.floor(Math.random() * 10);
+
+}
     const size = result >= 5 ? "Big" : "Small";
 
     let color;
-    if ([1, 3, 7, 9].includes(result)) color = "Red";
-    else if ([2, 4, 6, 8].includes(result)) color = "Green";
+    if ([1,3,7,9].includes(result)) color = "Red";
+    else if ([2,4,6,8].includes(result)) color = "Green";
     else color = "Violet";
 
     const bets = await Bet.find({
@@ -99,23 +113,27 @@ exports.generateResult = async (req, res) => {
         bet.winAmount = finalPayout;
 
         if (user) {
-          user.wallet += finalPayout;
+
+          /* ✅ FIXED WALLET FIELD */
+          user.coins += finalPayout;
           await user.save();
 
-          // 🧾 Ledger Entry (Credit)
           await Transaction.create({
             userId: user._id,
             type: "credit",
             amount: finalPayout,
-            balanceAfter: user.wallet,
+            balanceAfter: user.coins,
             reason: "Bet Win",
             roundId: runningRound.roundId
           });
+
         }
 
       } else {
+
         bet.status = "lost";
         bet.winAmount = 0;
+
       }
 
       await bet.save();
@@ -149,8 +167,10 @@ Total Bets: ${bets.length}
     }
 
   } catch (err) {
+
     if (res) {
       res.status(500).json({ error: err.message });
     }
+
   }
 };

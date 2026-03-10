@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 
 const betSchema = new mongoose.Schema({
+
   userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
@@ -9,7 +10,8 @@ const betSchema = new mongoose.Schema({
 
   roundId: {
     type: String,
-    required: true
+    required: true,
+    index: true
   },
 
   betType: {
@@ -19,13 +21,15 @@ const betSchema = new mongoose.Schema({
   },
 
   betValue: {
-    type: String, // e.g. "5" or "Big" or "Red"
-    required: true
+    type: String,
+    required: true,
+    trim: true
   },
 
   amount: {
     type: Number,
-    required: true
+    required: true,
+    min: 1
   },
 
   status: {
@@ -40,5 +44,11 @@ const betSchema = new mongoose.Schema({
   }
 
 }, { timestamps: true });
+
+/* ============================= */
+/* Prevent duplicate bets spam   */
+/* ============================= */
+
+betSchema.index({ userId:1, roundId:1 });
 
 module.exports = mongoose.model("Bet", betSchema);

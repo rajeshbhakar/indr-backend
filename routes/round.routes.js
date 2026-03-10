@@ -6,7 +6,15 @@ const {
   generateResult
 } = require("../controllers/roundController");
 
-router.post("/create", createRound);
-router.post("/generate", generateResult);
+const { protect } = require("../middleware/auth.middleware");
+const { adminOnly } = require("../middleware/admin.middleware");
 
-module.exports = router;
+/* ============================= */
+/* ADMIN ONLY ROUND CONTROL      */
+/* ============================= */
+
+router.post("/create", protect, adminOnly, createRound);
+
+router.post("/generate", protect, adminOnly, generateResult);
+
+module.exports = router;  

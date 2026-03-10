@@ -1,10 +1,12 @@
 const mongoose = require("mongoose");
 
 const roundSchema = new mongoose.Schema({
+
   roundId: {
     type: String,
     required: true,
-    unique: true
+    unique: true,
+    index: true
   },
 
   startTime: {
@@ -13,13 +15,15 @@ const roundSchema = new mongoose.Schema({
   },
 
   endTime: {
-    type: Date
+    type: Date,
+    default: null
   },
 
   status: {
     type: String,
     enum: ["running", "ended"],
-    default: "running"
+    default: "running",
+    index: true
   },
 
   result: {
@@ -32,7 +36,6 @@ const roundSchema = new mongoose.Schema({
     default: 0
   },
 
-  
   bettingLocked: {
     type: Boolean,
     default: false
