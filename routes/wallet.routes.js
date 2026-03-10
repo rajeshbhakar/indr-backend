@@ -8,4 +8,4 @@ router.get("/balance", protect, getWallet);
 router.post("/add", protect, addCoins);
 router.post("/deduct", protect, deductCoins);
 
-module.exports = router;    
+module.exports = router;  
