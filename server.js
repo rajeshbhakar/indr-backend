@@ -4,7 +4,6 @@ const express = require("express");
 const cors = require("cors");
 const connectDB = require("./config/db");
 
-
 const app = express();
 
 connectDB();
@@ -20,6 +19,35 @@ app.get("/", (req, res) => {
   res.status(200).json({
     success: true,
     message: "INDR Backend is Live 🚀"
+  });
+});
+
+/* ============================= */
+/* 🔥 ✅ WINGO ROUTES (ADD KIYA) */
+/* ============================= */
+
+// 🟢 Current Game Info
+app.get("/api/wingo", (req, res) => {
+  res.json({
+    time: 30,
+    period: "202603171234"
+  });
+});
+
+// 🟢 History
+app.get("/api/wingo/history", (req, res) => {
+  res.json([
+    { number: 2, color: "red" },
+    { number: 7, color: "green" },
+    { number: 5, color: "violet" }
+  ]);
+});
+
+// 🟢 Bet
+app.post("/api/wingo/bet", (req, res) => {
+  res.json({
+    success: true,
+    message: "Bet placed successfully"
   });
 });
 
@@ -44,14 +72,6 @@ app.use("/api/game", gameRoutes);
 app.use("/api/profile", profileRoutes);
 
 /* ============================= */
-/* ✅ DATABASE CONNECT           */
-/* ============================= */
-
-// Rajesh ji, maine yahan direct URI daal di hai aur connection options badha diye hain
-// Isse DNS issues (ECONNREFUSED) bypass hone ke chances zyada hain.
-
-
-/* ============================= */
 /* ❌ 404 HANDLER                */
 /* ============================= */
 
@@ -71,4 +91,3 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
 });
-
